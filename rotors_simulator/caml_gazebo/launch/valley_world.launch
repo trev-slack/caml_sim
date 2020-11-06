@@ -1,0 +1,106 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="mav_name" default="firefly"/>
+  <arg name="uav_name" default="techpod"/>
+  <arg name="x_1" default="1.0"/>
+  <arg name="y_1" default="1.0"/>
+  <arg name="z_1" default="0.1"/>
+  <arg name="world_name" default="valley_world"/>
+  <arg name="enable_logging" default="false" />
+  <arg name="enable_ground_truth" default="true" />
+  <arg name="log_file" default="$(arg mav_name)" />
+  <arg name="debug" default="false"/>
+  <arg name="gui" default="true"/>
+  <arg name="paused" default="true"/>
+  <arg name="node_start_delay" default="1.0" />  
+
+  <!-- The following line causes gzmsg and gzerr messages to be printed to the console
+      (even when Gazebo is started through roslaunch) -->
+  <arg name="verbose" default="true"/>
+
+  <env name="GAZEBO_MODEL_PATH" value="${GAZEBO_MODEL_PATH}:$(find rotors_gazebo)/models"/>
+  <env name="GAZEBO_RESOURCE_PATH" value="${GAZEBO_RESOURCE_PATH}:$(find rotors_gazebo)/models"/>
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find caml_gazebo)/worlds/$(arg world_name).world" />
+    <arg name="debug" value="$(arg debug)" />
+    <arg name="paused" value="$(arg paused)" />
+    <arg name="gui" value="$(arg gui)" />
+    <arg name="verbose" value="$(arg verbose)"/>
+  </include>
+
+  <group ns="$(arg mav_name)">
+    <include file="$(find rotors_gazebo)/launch/spawn_mav.launch">
+      <arg name="mav_name" value="$(arg mav_name)" />
+      <arg name="model" value="$(find rotors_description)/urdf/mav_generic_odometry_sensor.gazebo" />
+      <arg name="enable_logging" value="$(arg enable_logging)" />
+      <arg name="enable_ground_truth" value="$(arg enable_ground_truth)" />
+      <arg name="log_file" value="$(arg log_file)"/>
+      <arg name="x" value="$(arg x_1)"/>
+      <arg name="y" value="$(arg y_1)"/>
+      <arg name="z" value="$(arg z_1)"/>
+    </include>
+    <node name="lee_position_controller_node" pkg="rotors_control" type="lee_position_controller_node" output="screen">
+      <rosparam command="load" file="$(find rotors_gazebo)/resource/lee_controller_$(arg mav_name).yaml" />
+      <rosparam command="load" file="$(find rotors_gazebo)/resource/$(arg mav_name).yaml" />
+      <remap from="odometry" to="odometry_sensor1/odometry" />
+    </node>
+
+    <node name="hovering_example" pkg="rotors_gazebo" type="hovering_example" output="screen"/>
+    <node name="waypoint_publisher_file" pkg="rotors_gazebo" type="waypoint_publisher_file" output="screen" args="$(find caml_gazebo)/resource/example_waypoints.txt"/>
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+  </group>
+  
+<!--   <group ns="$(arg uav_name)">
+    <include file="$(find rotors_gazebo)/launch/spawn_fixed_wing.launch">
+      <arg name="uav_name" value="$(arg uav_name)" />
+      <arg name="model" value="$(find rotors_description)/urdf/$(arg uav_name)_base.xacro" />
+      <arg name="enable_logging" value="$(arg enable_logging)" />
+      <arg name="enable_ground_truth" value="$(arg enable_ground_truth)" />
+      <arg name="log_file" value="$(arg log_file)"/>
+      <arg name="x" value="0"/>
+      <arg name="y" value="0"/>
+      <arg name="z" value="20"/>
+      <arg name="P" value="0.2"/>
+    </include>
+  </group> -->
+
+  <group ns="$(arg uav_name)">
+    <include file="$(find rotors_gazebo)/launch/spawn_fixed_wing.launch">
+      <arg name="uav_name" value="$(arg uav_name)" />
+      <arg name="model" value="$(find rotors_description)/urdf/$(arg uav_name)_base.xacro" />
+      <arg name="enable_logging" value="$(arg enable_logging)" />
+      <arg name="enable_ground_truth" value="$(arg enable_ground_truth)" />
+      <arg name="log_file" value="$(arg log_file)"/>
+      <arg name="is_input_joystick" value="true" />
+    </include>
+    <node name="joy_node" pkg="joy" type="joy_node" />
+    <node name="rotors_joy_interface" pkg="rotors_joy_interface" type="rotors_joy_interface">
+      <param name="is_fixed_wing" value="true" />
+      <param name="max_roll" value="2.0" />
+      <param name="max_pitch" value="1.0" />
+      <param name="max_yaw_rate" value="1.0" />
+      <arg name="z" value="1"/>
+    </node>
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+  </group>
+<!-- launch controller node -->
+  <node name="techpod_controller" pkg="caml_gazebo" type="techpod_controller.py" output="screen"/>
+  <!-- launch rviz -->
+  <arg name="rvizconfig" default="$(find caml_gazebo)/resource/techpod_view.rviz" />
+
+  <param name="robot_description" command="$(find xacro)/xacro $(find rotors_description)/urdf/techpod.xacro 
+    namespace:=techpod
+    aero_params_yaml_file:=aero_params_$(arg uav_name).yaml
+    vehicle_params_yaml_file:=$(arg uav_name).yaml
+    is_input_joystick:=False" />
+  <rosparam>
+    ns: "techpod/"
+  </rosparam>
+  <node name="rviz_wind_field" pkg="caml_gazebo" type="rviz_wind_field.py" output="screen"/>
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" />
+</launch>
+

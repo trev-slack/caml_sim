@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/cohrint/catkin_ws/src/rotors_simulator/rotors_gazebo/build/devel/setup.sh
