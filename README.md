@@ -1,4 +1,4 @@
-### CAML Gazebo Sim
+# CAML Gazebo Sim
 This simulator is built on the RotorS simulator with modifications made to allow for live-calculated dynamic wind.
 
 ## Installation Instructions - Ubuntu 18.04 with ROS Melodic
