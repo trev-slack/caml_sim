@@ -31,12 +31,12 @@ static constexpr double kDefaultWindMeanDirectionz = 0.0;
 static constexpr double kDefaultWindSTDSpeed = 0.0;
 static constexpr double kDefaultWindSTDDirection = 0.0;
 static constexpr double kDefaultWindSTDDirectionz = 0.0;
-static constexpr double kDefaultBiasSpeed = 0.0;
-static constexpr double kDefaultBiasDirection = 0.0;
-static constexpr double kDefaultBiasDirectionz = 0.0;
-static constexpr double kDefaultTurbulanceBiasSpeed = 0.0;
-static constexpr double kDefaultTurbulanceBiasDirection = 0.0;
-static constexpr double kDefaultTurbulanceBiasDirectionz = 0.0;
+static constexpr double kDefaultGustSpeed = 0.0;
+static constexpr double kDefaultGustDirection = 0.0;
+static constexpr double kDefaultGustDirectionz = 0.0;
+static constexpr double kDefaultTurbulanceGustSpeed = 0.0;
+static constexpr double kDefaultTurbulanceGustDirection = 0.0;
+static constexpr double kDefaultTurbulanceGustDirectionz = 0.0;
 
 
 /// \brief    This gazebo plugin simulates wind acting on a model.
@@ -55,12 +55,12 @@ class GazeboWindPlugin : public ModelPlugin {
         wind_std_speed_(kDefaultWindSTDSpeed),
         wind_std_direction_(kDefaultWindSTDDirection),
         wind_std_direction_z_(kDefaultWindSTDDirectionz),
-        wind_bias_speed_(kDefaultBiasSpeed),
-        wind_bias_direction_(kDefaultBiasDirection),
-        wind_bias_direction_z_(kDefaultBiasDirectionz),
-        turbulance_bias_speed_(kDefaultTurbulanceBiasSpeed),
-        turbulance_bias_direction_(kDefaultTurbulanceBiasDirection),
-        turbulance_bias_direction_z_(kDefaultTurbulanceBiasDirectionz),
+        wind_gust_speed_(kDefaultGustSpeed),
+        wind_gust_direction_(kDefaultGustDirection),
+        wind_gust_direction_z_(kDefaultGustDirectionz),
+        turbulance_gust_speed_(kDefaultTurbulanceGustSpeed),
+        turbulance_gust_direction_(kDefaultTurbulanceGustDirection),
+        turbulance_gust_direction_z_(kDefaultTurbulanceGustDirectionz),
         frame_id_(kDefaultFrameId),
         link_name_(kDefaultLinkName),
         node_handle_(nullptr),
@@ -113,31 +113,31 @@ class GazeboWindPlugin : public ModelPlugin {
   double wind_std_speed_;
   double wind_std_direction_;
   double wind_std_direction_z_;
-  double wind_bias_speed_;
-  double wind_bias_direction_;
-  double wind_bias_direction_z_;
-  double turbulance_bias_speed_;
-  double turbulance_bias_direction_;
-  double turbulance_bias_direction_z_;
+  double wind_gust_speed_;
+  double wind_gust_direction_;
+  double wind_gust_direction_z_;
+  double turbulance_gust_speed_;
+  double turbulance_gust_direction_;
+  double turbulance_gust_direction_z_;
 
   double windNormSpeed_;
   double windNormDirection_;
   double windNormDirection_z_;
   double windNormNorth_;
   double windNormEast_;
-  double windNormSouth_;
-  double windBiasSpeed_;
-  double windBiasDirection_;
-  double windBiasDirection_z_;
-  double windBiasNorth_;
-  double windBiasEast_;
-  double windBiasSouth_;
+  double windNormDown_;
+  double windGustSpeed_;
+  double windGustDirection_;
+  double windGustDirection_z_;
+  double windGustNorth_;
+  double windGustEast_;
+  double windGustDown_;
   double windTurbulanceSpeed_;
   double windTurbulanceDirection_;
   double windTurbulanceDirection_z_;
   double windTurbulanceNorth_;
   double windTurbulanceEast_;
-  double windTurbulanceSouth_;
+  double windTurbulanceDown_;
 
   ignition::math::Vector3d xyz_offset_;
   ignition::math::Vector3d wind_direction_;

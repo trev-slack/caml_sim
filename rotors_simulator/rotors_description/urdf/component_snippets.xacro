@@ -580,7 +580,7 @@
 
   <!-- Macro to add the dynamic wind plugin. -->
   <xacro:macro name="wind_dynamic_plugin_macro"
-    params="namespace xyz_offset wind_direction wind_direction_z wind_speed_mean wind_std_speed wind_std_direction wind_std_direction_z wind_bias_speed wind_bias_direction wind_bias_direction_z turbulance_bias_speed turbulance_bias_direction turbulance_bias_direction_z custom_wind_field_path">
+    params="namespace xyz_offset wind_direction wind_direction_z wind_speed_mean wind_std_speed wind_std_direction wind_std_direction_z wind_gust_speed wind_gust_direction wind_gust_direction_z turbulance_gust_speed turbulance_gust_direction turbulance_gust_direction_z custom_wind_field_path">
     <gazebo>
       <plugin filename="librotors_gazebo_wind_dynamic_plugin.so" name="wind_plugin">
         <frameId>world</frameId>
@@ -593,12 +593,12 @@
         <windSTDSpeed>${wind_std_speed}</windSTDSpeed>
         <windSTDDirection>${wind_std_direction}</windSTDDirection>
         <windSTDDirectionz>${wind_std_direction_z}</windSTDDirectionz>
-        <windBiasSpeed>${wind_bias_speed}</windBiasSpeed>
-        <windBiasDirection>${wind_bias_direction}</windBiasDirection>
-        <windBiasDirectionz>${wind_bias_direction_z}</windBiasDirectionz>
-        <turbulanceBiasSpeed>${turbulance_bias_speed}</turbulanceBiasSpeed>
-        <turbulanceBiasDirection>${turbulance_bias_direction}</turbulanceBiasDirection>
-        <turbulanceBiasDirectionz>${turbulance_bias_direction_z}</turbulanceBiasDirectionz>
+        <windGustSpeed>${wind_gust_speed}</windGustSpeed>
+        <windGustDirection>${wind_gust_direction}</windGustDirection>
+        <windGustDirectionz>${wind_gust_direction_z}</windGustDirectionz>
+        <turbulanceGustSpeed>${turbulance_gust_speed}</turbulanceGustSpeed>
+        <turbulanceGustDirection>${turbulance_gust_direction}</turbulanceGustDirection>
+        <turbulanceGustDirectionz>${turbulance_gust_direction_z}</turbulanceGustDirectionz>
         <customWindFieldPath>${custom_wind_field_path}</customWindFieldPath>
       </plugin>
     </gazebo>

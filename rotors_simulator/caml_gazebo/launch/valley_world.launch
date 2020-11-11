@@ -4,7 +4,7 @@
   <arg name="world_name" default="valley_world"/>
   <arg name="enable_logging" default="false" />
   <arg name="enable_ground_truth" default="true" />
-  <arg name="log_file" default="$(arg mav_name)" />
+  <arg name="log_file" default="$(arg uav_name)" />
   <arg name="debug" default="false"/>
   <arg name="gui" default="true"/>
   <arg name="paused" default="true"/>

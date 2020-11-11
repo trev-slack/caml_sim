@@ -53,12 +53,12 @@
     wind_std_speed="0.5"
     wind_std_direction="0.174533"
     wind_std_direction_z="0.1"
-    wind_bias_speed="0.0"
-    wind_bias_direction="0.0"
-    wind_bias_direction_z="0.0"
-    turbulance_bias_speed="5.0"
-    turbulance_bias_direction="0.785398"
-    turbulance_bias_direction_z="0.1"
+    wind_gust_speed="0.0"
+    wind_gust_direction="0.0"
+    wind_gust_direction_z="0.0"
+    turbulance_gust_speed="5.0"
+    turbulance_gust_direction="0.785398"
+    turbulance_gust_direction_z="0.1"
     custom_wind_field_path="$(find caml_gazebo)/resource/valley_map_wind/valley_wind_field0.txt">
   </xacro:wind_dynamic_plugin_macro>
 

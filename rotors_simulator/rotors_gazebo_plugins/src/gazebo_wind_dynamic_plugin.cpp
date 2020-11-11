@@ -5,6 +5,7 @@
 
 #include "rotors_gazebo_plugins/gazebo_wind_dynamic_plugin.h"
 #include <ros/console.h>
+#include <tf/transform_datatypes.h>
 #include <fstream>
 #include <math.h>
 #include <string>
@@ -70,18 +71,18 @@ void GazeboWindPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
   // mean wind field standard deviation of direction
   getSdfParam<double>(_sdf, "windSTDDirection", wind_std_direction_, wind_std_direction_);
   getSdfParam<double>(_sdf, "windSTDDirectionz", wind_std_direction_z_, wind_std_direction_z_);
-  // bias bounds
-  // uniform bias bounds on speed uncertainty
-  getSdfParam<double>(_sdf, "windBiasSpeed", wind_bias_speed_, wind_bias_speed_);
-  // uniform bias bounds on direction uncertainty
-  getSdfParam<double>(_sdf, "windBiasDirection", wind_bias_direction_, wind_bias_direction_);
-  getSdfParam<double>(_sdf, "windBiasDirectionz", wind_bias_direction_z_, wind_bias_direction_z_);
+  // gust bounds
+  // uniform gust bounds on speed uncertainty
+  getSdfParam<double>(_sdf, "windGustSpeed", wind_gust_speed_, wind_gust_speed_);
+  // uniform gust bounds on direction uncertainty
+  getSdfParam<double>(_sdf, "windGustDirection", wind_gust_direction_, wind_gust_direction_);
+  getSdfParam<double>(_sdf, "windGustDirectionz", wind_gust_direction_z_, wind_gust_direction_z_);
   // turbulence bounds
-  // turbulence uniform bias bounds on speed uncertainty
-  getSdfParam<double>(_sdf, "turbulanceBiasSpeed", turbulance_bias_speed_, turbulance_bias_speed_);
-  // turbulence uniform bias bounds on direction uncertainty
-  getSdfParam<double>(_sdf, "turbulanceBiasDirection", turbulance_bias_direction_, turbulance_bias_direction_);
-  getSdfParam<double>(_sdf, "turbulanceBiasDirectionz", turbulance_bias_direction_z_, turbulance_bias_direction_z_);
+  // turbulence uniform gust bounds on speed uncertainty
+  getSdfParam<double>(_sdf, "turbulanceGustSpeed", turbulance_gust_speed_, turbulance_gust_speed_);
+  // turbulence uniform gust bounds on direction uncertainty
+  getSdfParam<double>(_sdf, "turbulanceGustDirection", turbulance_gust_direction_, turbulance_gust_direction_);
+  getSdfParam<double>(_sdf, "turbulanceGustDirectionz", turbulance_gust_direction_z_, turbulance_gust_direction_z_);
 
   std::string custom_wind_field_path;
   getSdfParam<std::string>(_sdf, "customWindFieldPath", custom_wind_field_path,
@@ -140,7 +141,14 @@ void GazeboWindPlugin::OnUpdate(const common::UpdateInfo& _info) {
   float map_height = bottom_z_[x_inf + y_inf*n_x_];
   //gzdbg << "[gazebo_wind_plugin] " << map_height << "\n";
 
+  //dryden turbulance model
 
+
+
+  tf::Quaternion q(link_orientation.X(), link_orientation.Y(), link_orientation.Z(), link_orientation.W());
+  tf::Matrix3x3 m(q);
+  double roll, pitch, yaw;
+  m.getRPY(roll, pitch, yaw);
 
 
 
@@ -150,39 +158,39 @@ void GazeboWindPlugin::OnUpdate(const common::UpdateInfo& _info) {
   windNormDirection_ = NormalGenerator(wind_mean_direction_,wind_std_direction_);
   windNormDirection_z_ = NormalGenerator(wind_mean_direction_z_,wind_std_direction_);
   // wind norm
-  windNormNorth_ = windNormSpeed_ * cos(windNormDirection_+link_orientation.Z());
-  windNormEast_ = windNormSpeed_ * sin(windNormDirection_+link_orientation.Z());
-  windNormSouth_ = windNormSpeed_ * sin(windNormDirection_z_+link_orientation.Y());
+  windNormNorth_ = windNormSpeed_ * cos(windNormDirection_+yaw);
+  windNormEast_ = windNormSpeed_ * sin(windNormDirection_+yaw);
+  windNormDown_ = windNormSpeed_ * sin(windNormDirection_z_+pitch);
 
   // create 0 to 1 random number generator
   std::random_device rd;
   std::mt19937 gen(rd());
   std::uniform_real_distribution<> dis(0, 1);//uniform distribution between 0 and 1
 
-  // sample wind biases
-  windBiasSpeed_ = wind_bias_speed_ * dis(gen) * signbit(dis(gen)-0.5);
-  windBiasDirection_ = wind_bias_direction_ * dis(gen) * signbit(dis(gen)-0.5);
-  windBiasDirection_z_ = wind_bias_direction_z_ * dis(gen) * signbit(dis(gen)-0.5);
-  // wind bias
-  windBiasNorth_ = windBiasSpeed_ * cos(windBiasDirection_+link_orientation.Z());
-  windBiasEast_ = windBiasSpeed_ * sin(windBiasDirection_+link_orientation.Z());
-  windBiasSouth_ = windBiasSpeed_ * sin(windBiasDirection_z_+link_orientation.Y());
+  // sample wind gust
+  windGustSpeed_ = wind_gust_speed_ * dis(gen) * signbit(dis(gen)-0.5);
+  windGustDirection_ = wind_gust_direction_ * dis(gen) * signbit(dis(gen)-0.5);
+  windGustDirection_z_ = wind_gust_direction_z_ * dis(gen) * signbit(dis(gen)-0.5);
+  // wind gust
+  windGustNorth_ = windGustSpeed_ * cos(windGustDirection_+link_orientation.Z());
+  windGustEast_ = windGustSpeed_ * sin(windGustDirection_+link_orientation.Z());
+  windGustDown_ = windGustSpeed_ * sin(windGustDirection_z_+link_orientation.Y());
 
   // sample wind turbulance
-  windTurbulanceSpeed_ = turbulance_bias_speed_ * dis(gen) * signbit(dis(gen)-0.5);
+  windTurbulanceSpeed_ = turbulance_gust_speed_ * dis(gen) * signbit(dis(gen)-0.5);
   // modify turbulance by height
   windTurbulanceSpeed_= windTurbulanceSpeed_ * (turbulance_speed_scale_factor/(link_position.Z()));
-  windTurbulanceDirection_ = turbulance_bias_direction_ * dis(gen) * signbit(dis(gen)-0.5);
-  windTurbulanceDirection_z_ = turbulance_bias_direction_z_ * dis(gen) * signbit(dis(gen)-0.5);
+  windTurbulanceDirection_ = turbulance_gust_direction_ * dis(gen) * signbit(dis(gen)-0.5);
+  windTurbulanceDirection_z_ = turbulance_gust_direction_z_ * dis(gen) * signbit(dis(gen)-0.5);
   //wind turbulance
   windTurbulanceNorth_ = windTurbulanceSpeed_ * cos(windTurbulanceDirection_+link_orientation.Z());
   windTurbulanceEast_ = windTurbulanceSpeed_ * sin(windTurbulanceDirection_+link_orientation.Z());
-  windTurbulanceSouth_ = windTurbulanceSpeed_ * sin(windTurbulanceDirection_z_+link_orientation.Y());
+  windTurbulanceDown_ = windTurbulanceSpeed_ * sin(windTurbulanceDirection_z_+link_orientation.Y());
 
   // calculate wind velocity
-  wind_velocity.X() = windNormNorth_ + windBiasNorth_ + windTurbulanceNorth_;
-  wind_velocity.Y() = windNormEast_ + windBiasEast_ + windTurbulanceEast_;
-  wind_velocity.Z() = windNormSouth_ + windBiasSouth_ + windTurbulanceSouth_;
+  wind_velocity.X() = windNormNorth_ + windGustNorth_ + windTurbulanceNorth_;
+  wind_velocity.Y() = windNormEast_ + windGustEast_ + windTurbulanceEast_;
+  wind_velocity.Z() = windNormDown_ + windGustDown_ + windTurbulanceDown_;
   
   wind_speed_msg_.mutable_header()->set_frame_id(frame_id_);
   wind_speed_msg_.mutable_header()->mutable_stamp()->set_sec(now.sec);
