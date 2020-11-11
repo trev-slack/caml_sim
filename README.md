@@ -30,3 +30,4 @@ It is possible to allocate more threads to the gazebo sim using the valley_world
   <island_threads>3</island_threads>
 </solver>
 ```
+Additional information on parallelization can be found at http://gazebosim.org/tutorials?tut=parallel&cat=physics.
