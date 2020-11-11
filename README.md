@@ -25,7 +25,7 @@ Modifying the "wind_dynamic_plugin_macro" under the rotors_simulator/rotors_desc
 ## Parallelization
 It is possible to allocate more threads to the gazebo sim using the valley_world.world file found under "rotors_simulator/caml_gazebo/worlds/valley_world.world". Add more threads by modifing
 ```
-$</solver>
+</solver>
   <thread_position_correction>1</thread_position_correction>
   <island_threads>3</island_threads>
 </solver>
