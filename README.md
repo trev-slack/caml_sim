@@ -6,11 +6,22 @@ Step 1: Install ROS Noetic (desktop full) http://wiki.ros.org/noetic/Installatio
 
 Step 2: Create a workspace http://wiki.ros.org/ROS/Tutorials/InstallingandConfiguringROSEnvironment
 
-Step 3: Install python3 catkin tools, sudo apt install python3-catkin-tools python3-osrf-pycommon
+Step 3: Install python3 catkin tools
+```
+$ sudo apt install python3-catkin-tools python3-osrf-pycommon
+```
+Step 4: Clone mav_comm and octomap_ros into your workspace/src,
+```
+$ git clone https://github.com/ethz-asl/mav_comm 
+$ git clone https://github.com/OctoMap/octomap_ros
+```
 
-Step 4: Clone mav_comm and octomap_ros into your workspace/src, "git clone https://github.com/ethz-asl/mav_comm ", "git clone https://github.com/OctoMap/octomap_ros "
-
-Step 5: Install ROS Joy, octomap_msgs, and octomap packages, "sudo apt-get install ros-noetic-joy", "sudo apt-get install ros-noetic-octomap", "sudo apt-get install ros-noetic-octomap-msgs"
+Step 5: Install ROS Joy, octomap_msgs, and octomap packages
+```
+$ sudo apt-get install ros-noetic-joy
+$ sudo apt-get install ros-noetic-octomap
+$ sudo apt-get install ros-noetic-octomap-msgs
+```
 
 Step 6: Clone this repo into your workspace
 
@@ -26,7 +37,7 @@ $ roslaunch caml_gazebo valley_world.launch
 ```
 Publishing to the following topic will command the UAV.
 ```
-$ /techpod/command/roll_pitch_yawrate_thrust
+/techpod/command/roll_pitch_yawrate_thrust
 ```
 A simplistic GUI control sim can be launched with
 ```
