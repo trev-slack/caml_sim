@@ -601,9 +601,6 @@
         <windGustDecay>${wind_gust_decay}</windGustDecay>
         <windTurbulenceMean>${wind_turbulence_mean}</windTurbulenceMean>
         <windTurbulenceSTD>${wind_turbulence_std}</windTurbulenceSTD>
-
-
-
       </plugin>
     </gazebo>
   </xacro:macro>

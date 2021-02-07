@@ -31,7 +31,7 @@
 
   <!-- Mount a pressure sensor. -->
   <!-- Removed b/c lacking ros noetic support -->
-  <xacro:default_pressure_sensor namespace="${namespace}" parent_link="${namespace}/base_link" />
+<!--   <xacro:default_pressure_sensor namespace="${namespace}" parent_link="${namespace}/base_link" /> -->
 
   <xacro:if value="$(arg enable_ground_truth)">
     <xacro:ground_truth_imu_and_odometry namespace="${namespace}" parent_link="${namespace}/base_link_inertia" />

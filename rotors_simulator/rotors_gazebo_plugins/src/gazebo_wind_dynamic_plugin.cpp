@@ -96,6 +96,8 @@ void GazeboWindPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
   // gust initial conditions
   wait_length = NormalGenerator(wind_gust_downtime_,wind_gust_downtime_std_);
   gust_length = NormalGenerator(wind_gust_length_,wind_gust_length_std_);
+  max_gust_time = NormalGenerator(gust_length/2,wind_gust_length_std_);
+  // max gust
   v_m = NormalGenerator(wind_gust_mean_,wind_gust_std_);
   start_wait = world_->SimTime().sec;
   gust_begin = true;
@@ -144,6 +146,7 @@ void GazeboWindPlugin::OnUpdate(const common::UpdateInfo& _info) {
   // dryden turbulance model (specification MIL-F-8785C, low altitude < 1000ft)
   // altitude 
   h = link_position.Z();
+  //gzdbg << "altitude: " << h;
   // velocity
   V = current_vel;
   // turbulance scale length
@@ -167,42 +170,53 @@ void GazeboWindPlugin::OnUpdate(const common::UpdateInfo& _info) {
   windTurbEast_ = omega_v*sqrt((2*L_v)/(3.14159*V))*((1+(3.46410*L_v)/V)/(pow((1+2*L_v/V*s2),2)));
   windTurbDown_ = omega_w*sqrt((2*L_w)/(3.14159*V))*((1+(3.46410*L_w)/V)/(pow((1+2*L_w/V*s3),2)));
   //gzdbg << "turbulance: " << windTurbNorth_ << ", " << windTurbEast_ << ", " << windTurbDown_ << std::endl;
-  
-  // 1-cosine gust model
-  // time between gusts
+
+
+  // 1-cosine gut model
+  // gusting
   if (now.sec-start_wait > wait_length) {
-    // begining of gust
     if (gust_begin == true) {
       start_gust = now.sec;
       gust_begin = false;
     }
     gust_elapsed = now.sec-start_gust;
-    // gusting
-    if (gust_elapsed < gust_length) {
-      v_gust = v_m/2*(1-cos((3.14159*gust_elapsed)/gust_length));
-      //gzdbg << "Gusting! " << v_gust << std::endl;
-    // gust decaying exponentially
-    } else if (gust_elapsed >= gust_length && gust_ending==true) {
-      v_gust = v_gust*exp(-wind_gust_decay_*(gust_elapsed-gust_length));
-      //gzdbg << "Gusting decaying: " << v_gust << std::endl;
-      if (v_gust<0.005) {
+    // gust gain
+    if (gust_elapsed < max_gust_time) {
+      v_gust = v_m/2*(1-cos((3.14159*gust_elapsed)/max_gust_time)); 
+      //gzdbg << "Gust Gain: " << v_gust << std::endl;
+    }
+    // gust decay
+    else if (gust_elapsed > max_gust_time && gust_elapsed < gust_length) {
+      if (gust_ending==true) {
+        decay_start = gust_elapsed;
         gust_ending = false;
       }
-    // gust just ended (need decay here)
-    } else {
+      v_gust = v_m/2*(1-cos((3.14159*(gust_elapsed-decay_start))/(gust_length-max_gust_time)+3.14159)); 
+      //gzdbg << "Gust Decay: " << v_gust << std::endl;
+    }
+    //gust ended
+    else {
       v_gust = 0;
       // new gust conditions
       gust_length = NormalGenerator(wind_gust_length_,wind_gust_length_std_);
       wait_length = NormalGenerator(wind_gust_downtime_,wind_gust_downtime_std_);
       v_m = NormalGenerator(wind_gust_mean_,wind_gust_std_);
+      // time of peak gust
+      max_gust_time = NormalGenerator(gust_length/2,wind_gust_length_std_);
       start_wait = now.sec;
-      gust_begin = true;
-      gust_ending = true;
+      gust_begin = true;  
+      gust_ending = true; 
     }
-  } else {
+  } 
+  // not gusting
+  else {
     v_gust = 0;
-    //gzdbg << "Not gusting: " << v_gust << std::endl;
+    //gzdbg << "Not gusting" << std::endl;
   }
+
+
+
+
   // apply gust aligned with nominal wind
   windGustNorth_ = v_gust * cos(windNormDirection_);
   windGustEast_ = v_gust * sin(windNormDirection_);

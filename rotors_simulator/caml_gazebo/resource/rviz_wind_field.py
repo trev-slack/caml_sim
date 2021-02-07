@@ -14,6 +14,7 @@ class viz():
     self.y = 0
     self.z = 0
     self.mag = 0.5
+    self.ns = rospy.get_namespace()
     self.main_sub()
 
 
@@ -23,14 +24,12 @@ class viz():
     publisher = rospy.Publisher(topic, Marker,queue_size=1)
     subscriber = rospy.Subscriber(subtopic,WindSpeed,self.callback)
     markerArray = MarkerArray()
-
     count = 0
     MARKERS_MAX = 1000
 
     while not rospy.is_shutdown():
-
        marker = Marker()
-       marker.header.frame_id = "techpod/base_link"
+       marker.header.frame_id = self.ns[1:-1]+"/base_link"
        marker.type = marker.ARROW
        marker.action = marker.ADD
        marker.scale.x = self.mag
@@ -48,23 +47,8 @@ class viz():
        marker.pose.position.y = 0
        marker.pose.position.z = 0
 
-       # We add the new marker to the MarkerArray, removing the oldest
-       # marker from it when necessary
-       # if(count > MARKERS_MAX):
-       #     markerArray.markers.pop(0)
-
-       # markerArray.markers.append(marker)
-
-       # # Renumber the marker IDs
-       # id = 0
-       # for m in markerArray.markers:
-       #     m.id = id
-       #     id += 1
-
        # Publish the MarkerArray
        publisher.publish(marker)
-
-       # count += 1
 
        rospy.sleep(0.01)
 

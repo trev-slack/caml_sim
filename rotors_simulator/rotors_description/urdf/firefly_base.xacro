@@ -50,6 +50,23 @@
       rotor_velocity_slowdown_sim="${rotor_velocity_slowdown_sim}" 
       wait_to_record_bag="$(arg wait_to_record_bag)" />
   </xacro:if>
-
+  <xacro:wind_dynamic_plugin_macro
+    namespace="${namespace}"
+    wind_direction_north_east="0.0"
+    wind_direction_down="0.1"
+    wind_speed_mean="1.0"
+    wind_std_speed="0.1"
+    wind_std_direction_north_east="0.05"
+    wind_std_direction_down="0.05"
+    wind_gust_mean="5"
+    wind_gust_std="0.1"
+    wind_gust_length="10"
+    wind_gust_length_std="0.1"
+    wind_gust_downtime="10"
+    wind_gust_downtime_std="0.1"
+    wind_gust_decay="0.5"
+    wind_turbulence_mean="1"
+    wind_turbulence_std="0.1">
+  </xacro:wind_dynamic_plugin_macro>
 </robot>
 

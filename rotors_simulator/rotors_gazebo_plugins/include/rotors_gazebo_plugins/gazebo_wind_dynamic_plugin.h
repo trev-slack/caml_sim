@@ -147,6 +147,8 @@ class GazeboWindPlugin : public ModelPlugin {
   double wait_length;
   double gust_elapsed;
   double gust_length;
+  double max_gust_time;
+  double decay_start;
   bool gust_begin;
   bool gust_ending;
   double v_m;
