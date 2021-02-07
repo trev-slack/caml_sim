@@ -33,7 +33,7 @@ Step 8: make files executable under rotors_simulator/caml_gazebo/resources: tech
 ## Basic Usage
 Launch the simulator using 
 ```
-$ roslaunch caml_gazebo valley_world.launch
+$ roslaunch caml_gazebo empty_world.launch
 ```
 Publishing to the following topic will command the UAV.
 ```
@@ -43,6 +43,11 @@ A simplistic GUI control sim can be launched with
 ```
 $ roslaunch caml_gazebo valley_world_GUI_control.launch
 ```
+A Battery node emits its status and level on the topic:
+```
+/techpod/battery_level
+```
+The battery length at max thrust can be changed in the launch file.
 
 ## Wind Specification
 Modifying the "wind_dynamic_plugin_macro" under the rotors_simulator/rotors_description/urdf/techpod_base.xacro" will change the calculated wind.
