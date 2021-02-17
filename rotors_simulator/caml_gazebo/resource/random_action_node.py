@@ -4,38 +4,35 @@ __author__ = "Nicholas Conlon"
 __email__ = "nicholas.conlon@colorado.edu"
 
 import rospy
+import sys
 from mav_msgs.msg import RollPitchYawrateThrust
-from std_msgs.msg import String
 from geometry_msgs.msg import Vector3
 from gazebo_msgs.msg import ModelState
 from gazebo_msgs.srv import SetModelState
 from diagnostic_msgs.msg import KeyValue
+from std_msgs.msg import Bool
+
 import numpy as np
 #import gym # don't need this yet
 
-"""
-Usage:
-    First start the gazebo sim then start this from command line:
-    $ cd catkin_ws
-    $ source devel/setup.bash
-    $ cd /src/caml_sim/rotors_simulator/caml_gazebo/resource/
-    $ python3 random_action.py
-"""
+
 class uav_isr_env:
     YP_ACTIONS = [-0.1, 0.0, 0.1]
     THRUST_ACTIONS = [0, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    RATE = 1
+    RATE = 1.0
 
-    def __init__(self):
+    def __init__(self, name='techpod'):
         rospy.init_node('random_action_node', anonymous=True)
+        self.uav_name = name
         self._battery_level = 100
         self._battery_status = 0
         self._set_state = None
-        self._filename = "actions_"
-        self._run_number = 0
+        self._filename = str(self.uav_name)+"_action_"
+        self._run_number = -1
 
-        self._pub_vel = rospy.Publisher('techpod/command/roll_pitch_yawrate_thrust', RollPitchYawrateThrust, queue_size=1)
-        self._battery_sub = rospy.Subscriber("techpod/battery_level", KeyValue, self._battery_state_callback)
+        self._pub_command = rospy.Publisher('/techpod/command/roll_pitch_yawrate_thrust', RollPitchYawrateThrust, queue_size=1)
+        self._pub_reset_battery = rospy.Publisher('/techpod/battery_reset', Bool, queue_size=1)
+        self._battery_sub = rospy.Subscriber("/techpod/battery_level", KeyValue, self._battery_state_callback)
 
         # connect to the model state service
         rospy.wait_for_service('/gazebo/set_model_state')
@@ -53,20 +50,20 @@ class uav_isr_env:
         return rospy.get_rostime().secs
 
     def _write_header(self):
-        with open(self._filename + str(self._run_number) + ".csv", "a") as f:
-            line = "{}, {},{},{},{},{}\n".format("time(s)", "roll", "pitch", "thrust.x", "thrust.y", "thrust.z")
+        with open(self._filename + str(self._run_number) + ".txt", "a") as f:
+            line = "{}, {},{},{},{},{}\n".format("roll", "pitch", "thrust.x", "thrust.y", "thrust.z","time(s)")
             print(line)
             f.write(line)
 
     def _write_actions(self, cmd):
-        with open(self._filename + str(self._run_number) + ".csv", "a") as f:
-            line = "{},{},{},{},{},{}\n".format(self._get_ros_time(), cmd.roll, cmd.pitch, cmd.thrust.x, cmd.thrust.y, cmd.thrust.z)
+        with open(self._filename + str(self._run_number) + ".txt", "a") as f:
+            line = "{},{},{},{},{},{}\n".format(cmd.roll, cmd.pitch, cmd.thrust.x, cmd.thrust.y, cmd.thrust.z, self._get_ros_time())
             print(line)
             f.write(line)
 
     def _send_random_respawn_state(self):
         state_msg = ModelState()
-        state_msg.model_name = 'techpod'
+        state_msg.model_name = self.uav_name
         state_msg.pose.position.x = np.random.randint(-3,3)
         state_msg.pose.position.y = np.random.randint(-3,3)
         state_msg.pose.position.z = np.random.randint(0,3)
@@ -81,9 +78,10 @@ class uav_isr_env:
         except rospy.ServiceException as e:
             print("Service call failed: %s" % e)
 
-
     def _send_reset_battery(self):
-        print("sending battery reset")
+        msg = Bool()
+        msg.data = True
+        self._pub_reset_battery.publish(msg)
         pass
 
     def _send_random_action(self):
@@ -92,7 +90,7 @@ class uav_isr_env:
         command.pitch = uav_isr_env.YP_ACTIONS[np.random.randint(0, len(uav_isr_env.YP_ACTIONS))]
         thrust = uav_isr_env.THRUST_ACTIONS[np.random.randint(0, len(uav_isr_env.THRUST_ACTIONS))]
         command.thrust = Vector3(thrust, thrust, thrust)
-        self._pub_vel.publish(command)
+        self._pub_command.publish(command)
         self._write_actions(command)
 
     def check_battery_status(self):
@@ -115,23 +113,30 @@ class uav_isr_env:
     def reset(self):
         self._run_number += 1
         self._write_header()
+        # signal Gazebo to reset itself
         self._send_random_respawn_state()
+        # signal the battery to reset itself
         self._send_reset_battery()
 
-        # signal Gazebo to reset itself
-        pass
 
-
-if __name__ == "__main__":
-    print("################## STARTING RANDOM ACTION NODE ##################")
-    env = uav_isr_env()
+def main(name):
+    env = uav_isr_env(name)
     r = rospy.Rate(uav_isr_env.RATE)
     env.reset()
-    i = 0
     while not rospy.is_shutdown():
-        print("batt {} {}".format(env.check_battery_status(), env.check_battery_level()))
         if env.check_battery_status() == -1:
             env.reset()
         else:
             env.step()
         r.sleep()
+
+
+if __name__ == "__main__":
+    try:
+        if len(sys.argv) < 1:
+            rospy.logfatal("Not enough argvs in action node. Should have: <uav name>")
+        else:
+            main(sys.argv[1])
+
+    except rospy.ROSInterruptException:
+        pass
