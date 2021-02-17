@@ -11,6 +11,7 @@ import numpy as np
 from mav_msgs.msg import RollPitchYawrateThrust
 from diagnostic_msgs.msg import KeyValue
 from rosgraph_msgs.msg import Clock
+from std_msgs.msg import Bool
 
 # battery
 class Battery():
@@ -52,6 +53,9 @@ class BatteryNode():
         self.thrust_subscriber = rospy.Subscriber("/techpod/command/roll_pitch_yawrate_thrust",RollPitchYawrateThrust,self.updateDraw)
         # update battery level with clock
         self.clock_sub = rospy.Subscriber("/clock",Clock,self.updateBat)
+        # reset battery based on topic
+        self.batt_reset_sub = rospy.Subscriber("/techpod/battery_reset",Bool,self.resetCallback)
+
         r = rospy.Rate(10) # 10 Hz
         while not rospy.is_shutdown():
             self.battery_publisher.publish(self.level_msg)
@@ -69,6 +73,11 @@ class BatteryNode():
         # publish battery percentage and status: 0 = alive, -1 = dead
         self.level_msg.key = str(status)
         self.level_msg.value = str(self.bat.percent_level)
+
+    # reset battery level to start level
+    def resetCallback(self,msg):
+        if msg.data == 1:
+            self.bat.level = self.bat.start_level
 
 
 
