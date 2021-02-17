@@ -146,17 +146,26 @@ void GazeboWindPlugin::OnUpdate(const common::UpdateInfo& _info) {
   // dryden turbulance model (specification MIL-F-8785C, low altitude < 1000ft)
   // altitude 
   h = link_position.Z();
-  //gzdbg << "altitude: " << h;
+  if (h==0) {
+    h = 0.0001;
+  }
+  //gzdbg << "altitude: " << h << std::endl;
   // velocity
   V = current_vel;
+  if (V==0) {
+    V = 0.0001;
+  }
+  //gzdbg << "velocity: " << V << std::endl;
   // turbulance scale length
   L_w = h;
   L_u = h/(pow((0.177+0.000823*h),1.2));
   L_v = L_u;
+  //gzdbg << "u turbulance scale: " << L_u << std::endl;
   // turbulance intensity
   omega_w = 0.1*windNormSpeed_;
   omega_u = omega_w/(pow((0.177+0.000823*h),0.4));
   omega_v = omega_u;
+  //gzdbg << "u turbulance intensity: " << omega_u << std::endl;
 
   // gaussian noise (place holder for band-limited)
   std::default_random_engine generator;
@@ -169,6 +178,7 @@ void GazeboWindPlugin::OnUpdate(const common::UpdateInfo& _info) {
   windTurbNorth_ = omega_u*sqrt((2*L_u)/(3.14159*V))*(1/(1+L_u/V*s1));
   windTurbEast_ = omega_v*sqrt((2*L_v)/(3.14159*V))*((1+(3.46410*L_v)/V)/(pow((1+2*L_v/V*s2),2)));
   windTurbDown_ = omega_w*sqrt((2*L_w)/(3.14159*V))*((1+(3.46410*L_w)/V)/(pow((1+2*L_w/V*s3),2)));
+  //gzdbg << "turbulance: " << windTurbNorth_ << " " << windTurbEast_ << " " << windTurbDown_ << std::endl;
   //gzdbg << "turbulance: " << windTurbNorth_ << ", " << windTurbEast_ << ", " << windTurbDown_ << std::endl;
 
 
