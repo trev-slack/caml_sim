@@ -5,6 +5,7 @@ __email__ = "nicholas.conlon@colorado.edu"
 
 import rospy
 import sys
+import os
 from mav_msgs.msg import RollPitchYawrateThrust
 from geometry_msgs.msg import Vector3
 from gazebo_msgs.msg import ModelState
@@ -27,7 +28,13 @@ class uav_isr_env:
         self._battery_level = 100
         self._battery_status = 0
         self._set_state = None
-        self._filename = str(self.uav_name)+"_action_"
+        data_dir = "data/"
+        try:
+            if not os.path.exists(data_dir):
+                os.makedirs(data_dir)
+        except OSError as e:
+            print(e)
+        self._filename = "data/" + str(self.uav_name) + "_action_"
         self._run_number = -1
 
         self._pub_command = rospy.Publisher('/techpod/command/roll_pitch_yawrate_thrust', RollPitchYawrateThrust, queue_size=1)
@@ -40,7 +47,6 @@ class uav_isr_env:
             self._set_state = rospy.ServiceProxy('/gazebo/set_model_state', SetModelState)
         except rospy.ServiceException as e:
             print("Service call failed: %s" % e)
-        print("service connected1")
 
     def _battery_state_callback(self, msg):
         self._battery_level = float(msg.value)
@@ -51,14 +57,12 @@ class uav_isr_env:
 
     def _write_header(self):
         with open(self._filename + str(self._run_number) + ".txt", "a") as f:
-            line = "{}, {},{},{},{},{}\n".format("roll", "pitch", "thrust.x", "thrust.y", "thrust.z","time(s)")
-            print(line)
+            line = "#roll,pitch,thrust.x,thrust.y,thrust.z,time[s]\n"
             f.write(line)
 
     def _write_actions(self, cmd):
         with open(self._filename + str(self._run_number) + ".txt", "a") as f:
             line = "{},{},{},{},{},{}\n".format(cmd.roll, cmd.pitch, cmd.thrust.x, cmd.thrust.y, cmd.thrust.z, self._get_ros_time())
-            print(line)
             f.write(line)
 
     def _send_random_respawn_state(self):
@@ -73,8 +77,6 @@ class uav_isr_env:
         state_msg.pose.orientation.w = 0
         try:
             resp = self._set_state(state_msg)
-            print(state_msg)
-            print(resp)
         except rospy.ServiceException as e:
             print("Service call failed: %s" % e)
 

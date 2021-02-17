@@ -6,6 +6,7 @@ __author__="Trevor Slack"
 __email__="trevor.slack@colorado.edu"
 
 import sys
+import os
 import rospy
 import numpy as np
 from gazebo_msgs.msg import ModelStates
@@ -23,7 +24,13 @@ class State():
 		self.batt_level = None
 		# file nameing
 		self.file_idx = 0
-		self.file_name = self.uav_name + "_state_"
+		data_dir = "data/"
+		try:
+			if not os.path.exists(data_dir):
+				os.makedirs(data_dir)
+		except OSError as e:
+			print(e)
+		self.file_name = "data/" + self.uav_name + "_state_"
 		# state recording
 		self.getStateVector()
 
