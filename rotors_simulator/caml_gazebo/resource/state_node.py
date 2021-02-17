@@ -19,7 +19,7 @@ class State():
 		# past states/time
 		self.xyz_old = np.array([0,0,0])
 		self.rpyaw_old = np.array([0,0,0])
-		self.t_old = rospy.Time(0)
+		self.t_old = rospy.get_rostime()
 		self.batt_level = None
 		# file nameing
 		self.file_idx = 0
@@ -58,27 +58,24 @@ class State():
 		t = rospy.get_rostime()
 		# write only if delta_t is not 0, and battery level is receved
 		# change in time [s]
-		delta_t = (t.nsecs-self.t_old.nsecs)*(10**(-9))
-		if delta_t !=0 and self.batt_level!=None:	
+		delta_t = t.secs-self.t_old.secs
+		if delta_t >=1 and self.batt_level!=None:	
 			# first order
 			xyz_dot = np.divide((xyz-self.xyz_old),delta_t)
 			rpyaw_dot = (rpyaw-self.rpyaw_old)/delta_t
-			# save state
-			self.xyz_old = xyz
-			self.rpyaw_old = rpyaw
-			self.t_old = t
 			# write state to file
 			state = np.array([xyz,rpyaw,xyz_dot,rpyaw_dot])
 			data_str = ""
-			for i in range(0,3):
-				for j in range(0,2):
+			for i in range(0,4):
+				for j in range(0,3):
 					data_str = data_str + str(state[i,j]) + ","
 			data_str = data_str + str(self.batt_level) + ","
-			data_str = data_str + str(t.nsecs) + "\n"
+			data_str = data_str + str(t.secs) + "\n"
 			self.curr_file.write(data_str)
-		self.xyz_old = xyz
-		self.rpyaw_old = rpyaw
-		self.t_old = t
+			# save old state
+			self.xyz_old = xyz
+			self.rpyaw_old = rpyaw
+			self.t_old = t
 
 
 
