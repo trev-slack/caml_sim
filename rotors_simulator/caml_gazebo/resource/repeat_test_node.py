@@ -31,7 +31,7 @@ class Battery():
 
 class uav_isr_env:
     YP_ACTIONS = [-0.1, 0.0, 0.1]
-    THRUST_ACTIONS = [0, 0.5, 1, 1.5, 2, 2.5, 3]
+    THRUST_ACTIONS = [0, 0.27, 0.55, 0.82, 1.09, 1.36, 1.64, 1.91, 2.18, 2.45, 2.73, 3]
     RATE = 1.0
 
     def __init__(self, name='techpod'):
