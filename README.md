@@ -48,6 +48,11 @@ A Battery node emits its status and level on the topic:
 /techpod/battery_level
 ```
 The battery length at max thrust can be changed in the launch file.
+A Repeat tester node can be used to generate random trajectories. This can be run with:
+```
+rosrun caml_gazebo repeat_test_node.py <uav name> <number of trajectories>
+```
+Parameters of the random trajectory are adjustable in the repeat_test_node.py script.
 
 ## Wind Specification
 Modifying the "wind_dynamic_plugin_macro" under the rotors_simulator/rotors_description/urdf/techpod_base.xacro" will change the calculated wind.
