@@ -71,11 +71,20 @@
     <gravity>0 0 -9.8</gravity>
     <magnetic_field>6e-06 2.3e-05 -4.2e-05</magnetic_field>
     <atmosphere type='adiabatic'/>
-    <physics type='ode'>
+    <physics type="ode" name="split_unthrottled3">
+      <real_time_update_rate>0.0</real_time_update_rate>
+      <ode>
+        <solver>
+          <thread_position_correction>1</thread_position_correction>
+          <island_threads>3</island_threads>
+        </solver>
+      </ode>
+    </physics>
+<!--     <physics type='ode'>
       <max_step_size>0.001</max_step_size>
       <real_time_factor>1</real_time_factor>
       <real_time_update_rate>1000</real_time_update_rate>
-    </physics>
+    </physics> -->
     <scene>
       <ambient>0.4 0.4 0.4 1</ambient>
       <background>0.7 0.7 0.7 1</background>
