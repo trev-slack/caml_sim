@@ -176,13 +176,13 @@ class uav_isr_env:
 
 
     def step(self):
-        # send action
-        self._send_random_action()
         # record state
         self._write_state()
         # record wind
         self._write_wind()
-
+        # send action
+        self._send_random_action()
+        
         # unused gym stuff.
         next_state = 0
         reward = 0
