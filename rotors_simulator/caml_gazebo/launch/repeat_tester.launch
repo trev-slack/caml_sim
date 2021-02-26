@@ -1,0 +1,61 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="uav_name" default="techpod"/>
+  <arg name="world_name" default="empty_world"/>
+  <arg name="enable_logging" default="false" />
+  <arg name="enable_ground_truth" default="false" />
+  <arg name="log_file" default="$(arg uav_name)" />
+  <arg name="paused" default="false"/>
+  <arg name="use_sim_time" default="true"/>
+  <arg name="gui" default="true"/>
+  <arg name="view_rviz" default="true"/>
+  <arg name="headless" default="false"/>
+  <arg name="debug" default="false"/>
+  <arg name="joy_control" default="true"/>
+
+
+  <!-- Start the gazebo sim -->
+  <env name="GAZEBO_MODEL_PATH" value="${GAZEBO_MODEL_PATH}:$(find rotors_gazebo)/models"/>
+  <env name="GAZEBO_RESOURCE_PATH" value="${GAZEBO_RESOURCE_PATH}:$(find rotors_gazebo)/models"/>
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find caml_gazebo)/worlds/$(arg world_name).world" />
+    <arg name="debug" value="$(arg debug)" />
+    <arg name="paused" value="$(arg paused)" />
+    <arg name="use_sim_time" value="$(arg use_sim_time)"/>
+    <arg name="gui" value="$(arg gui)" />
+    <arg name="headless" value="$(arg headless)"/>
+    <arg name="verbose" value="true"/>
+  </include>
+
+
+  <!-- Spawn the UAV -->
+  <group ns="$(arg uav_name)">
+    <include file="$(find rotors_gazebo)/launch/spawn_fixed_wing.launch">
+      <arg name="uav_name" value="$(arg uav_name)" />
+      <arg name="model" value="$(find rotors_description)/urdf/$(arg uav_name)_base.xacro" />
+      <arg name="enable_logging" value="$(arg enable_logging)" />
+      <arg name="enable_ground_truth" value="$(arg enable_ground_truth)" />
+      <arg name="log_file" value="$(arg log_file)"/>
+      <arg name="is_input_joystick" value="$(arg joy_control)" />
+    </include>
+    <!-- joy stick control -->
+    <node name="joy_node" pkg="joy" type="joy_node" />
+    <node name="rotors_joy_interface" pkg="rotors_joy_interface" type="rotors_joy_interface">
+      <param name="is_fixed_wing" value="true" />
+      <param name="max_roll" value="3.0" />
+      <param name="max_pitch" value="3.0" />
+      <param name="max_yaw_rate" value="3.0" />
+    </node>
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+  </group>
+
+  <!-- Launch GUI -->
+  <node name="techpod_controller" pkg="caml_gazebo" type="techpod_controller.py" output="screen"/>
+  <!-- Launch Battery -->
+  <node name="battery_node" pkg="caml_gazebo" type="battery_node.py" args="90 3 0.001" output="screen"/>
+  <!-- Launch Repeat Tester -->
+  <node name="random_action_node" pkg="caml_gazebo" type="random_action_node.py" args="techpod 3" output="screen"/>
+
+</launch>
+
