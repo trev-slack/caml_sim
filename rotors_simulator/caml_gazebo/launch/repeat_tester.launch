@@ -7,9 +7,9 @@
   <arg name="log_file" default="$(arg uav_name)" />
   <arg name="paused" default="false"/>
   <arg name="use_sim_time" default="true"/>
-  <arg name="gui" default="true"/>
+  <arg name="gui" default="false"/>
   <arg name="view_rviz" default="true"/>
-  <arg name="headless" default="false"/>
+  <arg name="headless" default="true"/>
   <arg name="debug" default="false"/>
   <arg name="joy_control" default="true"/>
 
@@ -53,9 +53,14 @@
   <!-- Launch GUI -->
   <node name="techpod_controller" pkg="caml_gazebo" type="techpod_controller.py" output="screen"/>
   <!-- Launch Battery -->
-  <node name="battery_node" pkg="caml_gazebo" type="battery_node.py" args="90 3 0.001" output="screen"/>
+  <node name="battery_node" pkg="caml_gazebo" type="battery_node.py" args="300 3 0.001" output="screen"/>
   <!-- Launch Repeat Tester -->
-  <node name="random_action_node" pkg="caml_gazebo" type="random_action_node.py" args="techpod 3" output="screen"/>
-
+  <node name="repeat_test_node" pkg="caml_gazebo" type="repeat_test_node.py" args="techpod 100" output="screen"/>
+  <!-- launch rviz -->
+<!--   <group if="$(arg view_rviz)" ns="$(arg uav_name)">
+    <arg name="rvizconfig" default="$(find caml_gazebo)/resource/techpod_view.rviz" />
+    <node name="rviz_wind_field" pkg="caml_gazebo" type="rviz_wind_field.py" output="screen"/>
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" />
+  </group> -->
 </launch>
 
