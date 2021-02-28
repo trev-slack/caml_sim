@@ -115,7 +115,7 @@ class uav_isr_env:
         state_msg.model_name = self.uav_name
         state_msg.pose.position.x = np.random.randint(-250,250)
         state_msg.pose.position.y = np.random.randint(-250,250)
-        state_msg.pose.position.z = np.random.randint(0,500)
+        state_msg.pose.position.z = np.random.randint(0,900)
         state_msg.pose.orientation.x = 0
         state_msg.pose.orientation.y = 0
         state_msg.pose.orientation.z = 0
