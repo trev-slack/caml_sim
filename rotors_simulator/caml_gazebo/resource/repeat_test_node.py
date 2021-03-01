@@ -8,6 +8,7 @@ import rospy
 import time
 import sys
 import os
+import datetime
 from mav_msgs.msg import RollPitchYawrateThrust
 from geometry_msgs.msg import Vector3
 from rotors_comm.msg import WindSpeed
@@ -34,22 +35,24 @@ class uav_isr_env:
     THRUST_ACTIONS = [0, 0.27, 0.55, 0.82, 1.09, 1.36, 1.64, 1.91, 2.18, 2.45, 2.73, 3]
     RATE = 1.0
 
-    def __init__(self, name='techpod'):
+    def __init__(self, name='techpod', data_dir="data/"):
         rospy.init_node('random_action_node', anonymous=True)
         self.uav_name = name
         self._battery_level = 100
         self._battery_status = 0
         self._set_state = None
-        data_dir = "data/"
+        self.state_data = np.array([[0,0,0],[0,0,0],[0,0,0],[0,0,0],0,0])
+        self.V = WindSpeed.velocity
+        self.state_data = data_dir
         try:
             if not os.path.exists(data_dir):
                 os.makedirs(data_dir)
         except OSError as e:
             print(e)
-        self._filename = "data/" + str(self.uav_name) + "_action_"
+        self._filename = self.state_data + str(self.uav_name) + "_action_"
         self._run_number = -1
-        self._state_filename = "data/" + str(self.uav_name) + "_state_"
-        self._wind_filename = "data/" + str(self.uav_name) + "_wind_"
+        self._state_filename = self.state_data + str(self.uav_name) + "_state_"
+        self._wind_filename = self.state_data + str(self.uav_name) + "_wind_"
         # past states/time
         self.xyz_old = np.array([0,0,0])
         self.rpyaw_old = np.array([0,0,0])
@@ -191,8 +194,10 @@ class uav_isr_env:
         return next_state, reward, done, info
 
     def reset(self):
+        # TODO set state_data, wind, & actions to zero so we don't write out stale state!
         # new files
-        self._run_number += 1
+        u = datetime.datetime.utcnow()
+        self._run_number = u.strftime("%Y%m%d_%H%MZ")
         self._write_header()
         self._write_header_state()
         self._write_header_wind()
@@ -204,8 +209,9 @@ class uav_isr_env:
 
 def main(args):
     time_start = time.time()
-    env = uav_isr_env(args[1])
+    env = uav_isr_env(args[1], args[3])
     trials = int(args[2])
+
     r = rospy.Rate(uav_isr_env.RATE)
     env.reset()
     i = 0
@@ -214,6 +220,7 @@ def main(args):
             if i<trials:
                 i+=1
                 env.reset()
+                rospy.loginfo("Starting Trajectory Trial {} of {}\n".format(i, trials))
             else:
                 rospy.loginfo("Finished Generating Trajectories! Time elapsed: {}\n".format(time.time()-time_start))
                 return
@@ -228,7 +235,7 @@ if __name__ == "__main__":
     time.sleep(10)
     try:
         if len(sys.argv) < 2:
-            rospy.logfatal("Not enough argvs in action node. Should have: <uav name> <number of trajectories>")
+            rospy.logfatal("Not enough argvs in action node. Should have: <uav name> <number of trajectories> <data dir>")
         else:
             main(sys.argv)
 

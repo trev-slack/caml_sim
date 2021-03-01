@@ -50,12 +50,13 @@
     <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
   </group>
 
-  <!-- Launch GUI -->
+  <!-- Launch GUI
   <node name="techpod_controller" pkg="caml_gazebo" type="techpod_controller.py" output="screen"/>
+  -->
   <!-- Launch Battery -->
-  <node name="battery_node" pkg="caml_gazebo" type="battery_node.py" args="300 3 0.001" output="screen"/>
+  <node name="battery_node" pkg="caml_gazebo" type="battery_node.py" args="90 3 0.001" output="screen"/>
   <!-- Launch Repeat Tester -->
-  <node name="repeat_test_node" pkg="caml_gazebo" type="repeat_test_node.py" args="techpod 100" output="screen"/>
+  <node name="repeat_test_node" pkg="caml_gazebo" type="repeat_test_node.py" args="techpod 1000 /data/" output="screen"/>
   <!-- launch rviz -->
 <!--   <group if="$(arg view_rviz)" ns="$(arg uav_name)">
     <arg name="rvizconfig" default="$(find caml_gazebo)/resource/techpod_view.rviz" />
