@@ -41,8 +41,8 @@ class uav_isr_env:
         self._battery_level = 100
         self._battery_status = 0
         self._set_state = None
-        self.state_data = np.array([[0,0,0],[0,0,0],[0,0,0],[0,0,0],0,0])
-        self.V = WindSpeed.velocity
+        self.state_data = None
+        self.V = None
         self.state_data = data_dir
         try:
             if not os.path.exists(data_dir):
@@ -180,11 +180,12 @@ class uav_isr_env:
 
     def step(self):
         # record state
-        self._write_state()
-        # record wind
-        self._write_wind()
-        # send action
-        self._send_random_action()
+        if self.state_data is not None and self.V is not None:
+            self._write_state()
+            # record wind
+            self._write_wind()
+            # send action
+            self._send_random_action()
         
         # unused gym stuff.
         next_state = 0
@@ -197,6 +198,8 @@ class uav_isr_env:
         # TODO set state_data, wind, & actions to zero so we don't write out stale state!
         # new files
         u = datetime.datetime.utcnow()
+        self.state_data = None
+        self.V = None
         self._run_number = u.strftime("%Y%m%d_%H%MZ")
         self._write_header()
         self._write_header_state()
